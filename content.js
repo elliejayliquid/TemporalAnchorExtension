@@ -48,7 +48,7 @@ function attachListener(chatInput) {
       timeStyle: 'medium',
     });
 
-    const timestampText = ` ⌚ [Sent: ${timestamp}]`;
+    const timestampText = `⌚ [Sent: ${timestamp}]`;
 
     console.log('Appending timestamp...');
 
