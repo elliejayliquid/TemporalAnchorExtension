@@ -6,7 +6,7 @@ It will appear at the end of the message in this format, using your system's def
 
 ⌚ [Sent: 12/3/25, 3:13:07 PM]
 
-**How to Install Locally (Chrome / Edge)**
+**How to Install Locally (Chrome)**
 
 **1.** Download or clone the repository.
 
