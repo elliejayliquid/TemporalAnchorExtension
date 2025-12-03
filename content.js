@@ -21,8 +21,11 @@ function attachListener(chatInput) {
     event.preventDefault();
     event.stopPropagation();
 
-    const timestamp = new Date().toLocaleString('en-NZ', {
-      timeZone: 'Pacific/Auckland',
+    // AUTOMATIC SYSTEM TIMEZONE
+    // Passing 'undefined' as the first argument uses the browser's default locale.
+    // Removing the 'timeZone' option defaults to the system's timezone.
+	// Used to have this hard-coded: timeZone: 'Pacific/Auckland'
+    const timestamp = new Date().toLocaleString(undefined, {
       dateStyle: 'short',
       timeStyle: 'medium',
     });
@@ -37,8 +40,6 @@ function attachListener(chatInput) {
         chatInput.value += `\n${timestampText}`;
       } else {
         // ContentEditable (Standard ChatGPT input)
-        // STRATEGY: Don't nuke innerHTML. Just append a text node or paragraph.
-        // This preserves code blocks, bold text, and lists pasted by the user.
         
         // We wrap the timestamp in a span or p to ensure separation
         const timeContainer = document.createElement('p');
