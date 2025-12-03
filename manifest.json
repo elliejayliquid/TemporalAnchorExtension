@@ -1,9 +1,19 @@
 {
   "manifest_version": 3,
   "name": "Temporal Anchor",
-  "version": "1.0",
+  "version": "1.1",
   "description": "Adds timestamps to messages automatically.",
-  "permissions": ["scripting", "activeTab"],
+  "permissions": [
+    "scripting", 
+    "activeTab", 
+    "storage"
+  ],
+  "action": {
+    "default_title": "Toggle Timestamp"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": ["*://chatgpt.com/*"],
