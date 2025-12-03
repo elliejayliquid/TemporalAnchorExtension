@@ -18,6 +18,11 @@ It will appear at the end of the message in this format, using your system's def
 
 **5.** Select the folder where your extension lives.
 
+**6.** The extension should be **ON** by default, with a little green icon; you might need to reload your page with the current chat to start using it. **Toggle it OFF/ON if you're having any issues**.
+
+**7.** It will add the timestamp whenever you hit **ENTER**. Shift + Enter still works as before. Clicking the send icon manually won't add the timestamp.
+
+
 **Privacy Disclaimer**
 
 This extension does not collect, store, transmit, or share any personal data.
