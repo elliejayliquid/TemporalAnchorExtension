@@ -1,5 +1,6 @@
 # TemporalAnchorExtension
-A Chrome extension for ChatGPT to append a time stamp at the end of user messages.
+A lightweight Chrome extension that appends a local timestamp to the end of each ChatGPT message.
+It improves quality of life by letting ChatGPT reference your local date/time and helping you see exactly when each message was sent, which is especially handy for searching and long conversations.
 
 It will appear at the end of the message in this format, using your system's default timezone:
 
