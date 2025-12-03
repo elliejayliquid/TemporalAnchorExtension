@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Temporal Anchor",
+  "version": "1.0",
+  "description": "Adds timestamps to messages automatically.",
+  "permissions": ["scripting", "activeTab"],
+  "content_scripts": [
+    {
+      "matches": ["*://chatgpt.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "icons": {
+    "128": "icon.png"
+  }
+}
