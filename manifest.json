@@ -17,7 +17,8 @@
       "matches": [
         "*://chatgpt.com/*",
         "*://chat.deepseek.com/*",
-        "*://claude.ai/*"
+        "*://claude.ai/*",
+        "*://gemini.google.com/*"
       ],
       "js": [
         "content.js"

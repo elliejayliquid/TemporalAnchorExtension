@@ -18,6 +18,11 @@ const CONFIG = {
     inputSelector: '[data-testid="chat-input"]',
     sendButtonSelector: 'button[aria-label="Send message"]',
     isContentEditable: true
+  },
+  'gemini.google.com': {
+    inputSelector: '.ql-editor[contenteditable="true"]',
+    sendButtonSelector: 'button[aria-label="Send message"]',
+    isContentEditable: true
   }
 };
 
@@ -29,12 +34,13 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
     if (result.temporalAnchorEnabled !== undefined) {
       isEnabled = result.temporalAnchorEnabled;
     }
+    console.log(`Temporal Anchor: Initial state loaded - ${isEnabled ? 'ON' : 'OFF'}`);
   });
 
   chrome.storage.onChanged.addListener((changes, namespace) => {
     if (namespace === 'local' && changes.temporalAnchorEnabled) {
       isEnabled = changes.temporalAnchorEnabled.newValue;
-      console.log(`Temporal Anchor is now: ${isEnabled ? 'ON' : 'OFF'}`);
+      console.log(`Temporal Anchor: State changed to ${isEnabled ? 'ON' : 'OFF'}`);
     }
   });
 }
