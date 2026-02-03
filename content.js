@@ -2,6 +2,21 @@
 // Adds timestamps to messages on AI chat platforms
 
 let isEnabled = true;
+let settings = {
+  sites: { chatgpt: true, deepseek: true, claude: true, gemini: true },
+  emoji: '⌚',
+  showDate: true,
+  showTime: true,
+  use24Hour: false
+};
+
+// Map hostnames to site keys
+const SITE_KEYS = {
+  'chatgpt.com': 'chatgpt',
+  'chat.deepseek.com': 'deepseek',
+  'claude.ai': 'claude',
+  'gemini.google.com': 'gemini'
+};
 
 const CONFIG = {
   'chatgpt.com': {
@@ -28,25 +43,65 @@ const CONFIG = {
 
 const currentHost = window.location.hostname;
 const siteConfig = Object.entries(CONFIG).find(([domain]) => currentHost.includes(domain))?.[1];
+const siteKey = Object.entries(SITE_KEYS).find(([domain]) => currentHost.includes(domain))?.[1];
 
+// Load settings
 if (typeof chrome !== 'undefined' && chrome.storage) {
-  chrome.storage.local.get(['temporalAnchorEnabled'], (result) => {
+  chrome.storage.local.get(['temporalAnchorEnabled', 'sites', 'emoji', 'showDate', 'showTime', 'use24Hour'], (result) => {
     if (result.temporalAnchorEnabled !== undefined) {
       isEnabled = result.temporalAnchorEnabled;
     }
-    console.log(`Temporal Anchor: Initial state loaded - ${isEnabled ? 'ON' : 'OFF'}`);
+    if (result.sites) settings.sites = result.sites;
+    if (result.emoji) settings.emoji = result.emoji;
+    if (result.showDate !== undefined) settings.showDate = result.showDate;
+    if (result.showTime !== undefined) settings.showTime = result.showTime;
+    if (result.use24Hour !== undefined) settings.use24Hour = result.use24Hour;
+
+    console.log(`Temporal Anchor: Loaded - Global: ${isEnabled ? 'ON' : 'OFF'}, Site (${siteKey}): ${settings.sites[siteKey] ? 'ON' : 'OFF'}`);
   });
 
   chrome.storage.onChanged.addListener((changes, namespace) => {
-    if (namespace === 'local' && changes.temporalAnchorEnabled) {
+    if (namespace !== 'local') return;
+
+    if (changes.temporalAnchorEnabled) {
       isEnabled = changes.temporalAnchorEnabled.newValue;
-      console.log(`Temporal Anchor: State changed to ${isEnabled ? 'ON' : 'OFF'}`);
+      console.log(`Temporal Anchor: Global changed to ${isEnabled ? 'ON' : 'OFF'}`);
     }
+    if (changes.sites) {
+      settings.sites = changes.sites.newValue;
+      console.log(`Temporal Anchor: Site settings updated`);
+    }
+    if (changes.emoji) settings.emoji = changes.emoji.newValue;
+    if (changes.showDate !== undefined) settings.showDate = changes.showDate.newValue;
+    if (changes.showTime !== undefined) settings.showTime = changes.showTime.newValue;
+    if (changes.use24Hour !== undefined) settings.use24Hour = changes.use24Hour.newValue;
   });
 }
 
+function formatTimestamp() {
+  const now = new Date();
+  const options = {};
+
+  if (settings.showDate) options.dateStyle = 'short';
+  if (settings.showTime) options.timeStyle = 'medium';
+  if (settings.use24Hour) options.hour12 = false;
+
+  // Need at least one format
+  if (!settings.showDate && !settings.showTime) {
+    options.timeStyle = 'medium';
+  }
+
+  const formatted = now.toLocaleString(undefined, options);
+  return `${settings.emoji} [Sent: ${formatted}]`;
+}
+
 function handleKeydown(event) {
+  // Check global toggle
   if (!isEnabled) return;
+
+  // Check per-site toggle
+  if (siteKey && !settings.sites[siteKey]) return;
+
   if (!siteConfig) return;
   if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return;
 
@@ -56,7 +111,7 @@ function handleKeydown(event) {
 
   if (!chatInput) return;
 
-  // Get text BEFORE blocking (this is the race we're trying to win)
+  // Get text BEFORE blocking
   let currentText = '';
   const paragraphs = chatInput.querySelectorAll('p');
   if (paragraphs.length > 0) {
@@ -65,56 +120,40 @@ function handleKeydown(event) {
     currentText = (chatInput.textContent || chatInput.innerText || chatInput.value || '').trim();
   }
 
-  console.log('Temporal Anchor: Enter at window level, text:', JSON.stringify(currentText.substring(0, 50)));
+  if (!currentText) return;
 
-  if (!currentText) {
-    console.log('Temporal Anchor: No text found, skipping');
-    return;
-  }
-
-  // BLOCK everything - we're at window level, highest priority
+  // BLOCK everything
   event.preventDefault();
   event.stopPropagation();
   event.stopImmediatePropagation();
 
-  console.log(`Temporal Anchor: Blocked Enter, adding timestamp...`);
-
-  const timestamp = new Date().toLocaleString(undefined, {
-    dateStyle: 'short',
-    timeStyle: 'medium',
-  });
-  const timestampText = `⌚ [Sent: ${timestamp}]`;
+  const timestampText = formatTimestamp();
+  console.log(`Temporal Anchor: Adding "${timestampText}"`);
 
   try {
     if (siteConfig.isContentEditable) {
       chatInput.focus();
 
-      // Move cursor to end of content (preserve existing formatting)
       const range = document.createRange();
       const sel = window.getSelection();
       range.selectNodeContents(chatInput);
-      range.collapse(false); // false = collapse to end
+      range.collapse(false);
       sel.removeAllRanges();
       sel.addRange(range);
 
-      // Append timestamp using execCommand (preserves existing content/formatting)
       document.execCommand('insertText', false, '\n' + timestampText);
 
-      // Notify framework
       chatInput.dispatchEvent(new InputEvent('input', {
         bubbles: true,
         composed: true,
         inputType: 'insertText',
         data: timestampText
       }));
-
-      console.log('Temporal Anchor: Timestamp appended');
     } else {
       chatInput.value += '\n' + timestampText;
       chatInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
-    // Click send
     setTimeout(() => clickSendButton(), 100);
 
   } catch (err) {
@@ -129,7 +168,6 @@ function clickSendButton() {
   }
 
   if (sendButton && !sendButton.disabled) {
-    console.log('Temporal Anchor: Clicking send');
     sendButton.click();
   } else {
     let attempts = 0;
@@ -137,7 +175,6 @@ function clickSendButton() {
       sendButton = document.querySelector(siteConfig.sendButtonSelector) ||
         document.querySelector('button[aria-label*="Send"]');
       if (sendButton && !sendButton.disabled) {
-        console.log('Temporal Anchor: SUCCESS');
         sendButton.click();
       } else if (attempts < 20) {
         attempts++;
@@ -150,10 +187,7 @@ function clickSendButton() {
 
 function init() {
   if (!siteConfig) return;
-  console.log(`Temporal Anchor: Initialized for ${currentHost} (window-level capture)`);
-
-  // Listen on WINDOW (highest level) in capture phase
-  // This should fire before any document/element listeners
+  console.log(`Temporal Anchor: Initialized for ${currentHost}`);
   window.addEventListener('keydown', handleKeydown, true);
 }
 

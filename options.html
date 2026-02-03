@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Temporal Anchor Settings</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background: #0b0e14;
+      color: #00d4ff;
+      min-width: 320px;
+    }
+
+    h2 {
+      margin-bottom: 25px;
+      border-bottom: 2px solid #00d4ff33;
+      padding-bottom: 10px;
+    }
+
+    .section {
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #00d4ff22;
+    }
+
+    .section-title {
+      font-size: 14px;
+      opacity: 0.7;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .setting {
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .setting label {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #00d4ff;
+      cursor: pointer;
+    }
+
+    input[type="text"] {
+      background: #151921;
+      color: #00d4ff;
+      border: 1px solid #00d4ff;
+      padding: 8px 12px;
+      border-radius: 4px;
+      width: 60px;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .preview {
+      background: #151921;
+      padding: 12px 15px;
+      border-radius: 6px;
+      margin-top: 15px;
+      font-family: monospace;
+      border-left: 3px solid #00d4ff;
+    }
+
+    .preview-label {
+      font-size: 11px;
+      opacity: 0.6;
+      margin-bottom: 5px;
+    }
+
+    .btn {
+      background: transparent;
+      color: #00d4ff;
+      border: 2px solid #00d4ff;
+      padding: 10px 25px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 1px;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+      background: #00d4ff;
+      color: #0b0e14;
+      box-shadow: 0 0 20px #00d4ff;
+    }
+
+    .site-icon {
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>⌚ Temporal Anchor Settings</h2>
+
+  <div class="section">
+    <div class="section-title">Master Control</div>
+    <div class="setting">
+      <label>
+        <input type="checkbox" id="globalEnabled">
+        Enable Temporal Anchor
+      </label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Enabled Sites</div>
+    <div class="setting">
+      <label>
+        <input type="checkbox" id="site_chatgpt">
+        <span class="site-icon">💬</span> ChatGPT
+      </label>
+    </div>
+    <div class="setting">
+      <label>
+        <input type="checkbox" id="site_deepseek">
+        <span class="site-icon">🔍</span> DeepSeek
+      </label>
+    </div>
+    <div class="setting">
+      <label>
+        <input type="checkbox" id="site_claude">
+        <span class="site-icon">🎭</span> Claude
+      </label>
+    </div>
+    <div class="setting">
+      <label>
+        <input type="checkbox" id="site_gemini">
+        <span class="site-icon">✨</span> Gemini
+      </label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Timestamp Format</div>
+    <div class="setting">
+      <label>Prefix emoji:</label>
+      <input type="text" id="emoji" maxlength="2" value="⌚">
+    </div>
+    <div class="setting">
+      <label>
+        <input type="checkbox" id="showDate">
+        Show date
+      </label>
+    </div>
+    <div class="setting">
+      <label>
+        <input type="checkbox" id="showTime">
+        Show time
+      </label>
+    </div>
+    <div class="setting">
+      <label>
+        <input type="checkbox" id="use24Hour">
+        Use 24-hour format
+      </label>
+    </div>
+
+    <div class="preview">
+      <div class="preview-label">Preview:</div>
+      <span id="preview">⌚ [Sent: 2/3/26, 5:30:00 PM]</span>
+    </div>
+  </div>
+
+  <button id="save" class="btn">SAVE SETTINGS</button>
+
+  <div style="margin-top: 40px; border-top: 1px dashed #00d4ff33; padding-top: 20px; text-align: center;">
+    <p style="font-size: 13px; opacity: 0.8; font-style: italic;">
+      Enjoying Temporal Anchor? Help keep development going!
+    </p>
+
+    <a href="https://ko-fi.com/elliejayliquid" target="_blank" style="text-decoration: none;">
+      <button class="btn">☕ BUY THE DEV A COFFEE</button>
+    </a>
+
+    <p style="font-size: 10px; margin-top: 15px; opacity: 0.5;">
+      Made with ❤️ by Ellie & Claude
+    </p>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+
+</html>

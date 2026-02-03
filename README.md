@@ -1,31 +1,59 @@
-# TemporalAnchorExtension
-A lightweight Chrome extension that appends a local timestamp to the end of each ChatGPT message.
-It improves quality of life by letting ChatGPT reference your local date/time and helping you see exactly when each message was sent, which is especially handy for searching and long conversations.
+# ⌚ Temporal Anchor
 
-It will appear at the end of the message in this format, using your system's default timezone:
+A lightweight Chrome extension that appends local timestamps to your AI chat messages.
 
+## Supported Platforms
+
+| Platform | Status |
+|----------|--------|
+| ChatGPT | ✅ |
+| DeepSeek | ✅ |
+| Claude | ✅ |
+| Gemini | ✅ |
+
+## Features
+
+- **Automatic timestamps** - Appends timestamp when you press Enter
+- **Per-site toggles** - Enable/disable for each platform individually
+- **Customizable format** - Choose your emoji, date/time display, 12h/24h format
+- **Quick toggle** - Click the extension icon to turn on/off globally
+- **Options page** - Right-click icon → Options for full settings
+
+Example timestamp:
+
+```
 ⌚ [Sent: 12/3/25, 3:13:07 PM]
+```
 
-**How to Install Locally (Chrome)**
+## Installation (Chrome/Edge)
 
-**1.** Download or clone the repository.
+1. Download or clone this repository
+2. Go to `chrome://extensions/`
+3. Enable **Developer mode** (top right)
+4. Click **Load unpacked**
+5. Select the extension folder
+6. The extension should show **ON** (green badge)
 
-**2.** Go to chrome://extensions/ (or Edge equivalent).
+## Usage
 
-**3.** Enable **Developer mode** (top right).
+- **Enter** = Send with timestamp
+- **Shift + Enter** = New line (no timestamp)
+- **Click extension icon** = Toggle on/off
+- **Right-click icon → Options** = Full settings
 
-**4.** Click **Load unpacked**.
+> Note: Clicking the send button manually won't add the timestamp.
 
-**5.** Select the folder where your extension lives.
-
-**6.** The extension should be **ON** by default, with a little green icon; you might need to reload your page with the current chat to start using it. **Toggle it OFF/ON if you're having any issues**.
-
-**7.** It will add the timestamp whenever you hit **ENTER**. Shift + Enter still works as before. Clicking the send icon manually won't add the timestamp.
-
-
-**Privacy Disclaimer**
+## Privacy
 
 This extension does not collect, store, transmit, or share any personal data.
-All processing happens locally in your browser, in real time, and nothing is sent to any server.
-The extension simply listens for text you type into the ChatGPT input box and appends a timestamp (if enabled).
-No logs, no analytics, no tracking, no external requests.
+All processing happens locally in your browser. No logs, no analytics, no tracking.
+
+## Credits
+
+Made with ❤️ by Ellie & Claude
+
+##
+
+<div class="container", align="center">
+  <a href='https://ko-fi.com/V7V31EO2OL' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+</div>
