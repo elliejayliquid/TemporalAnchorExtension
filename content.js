@@ -1,9 +1,29 @@
-// Temporal Anchor - Optimized for Large Text & Formatting Preservation
+// Temporal Anchor - Multi-Provider Support
+// Adds timestamps to messages on AI chat platforms
 
-// Global state variable
 let isEnabled = true;
 
-// 1. Sync state immediately on load
+const CONFIG = {
+  'chatgpt.com': {
+    inputSelector: '#prompt-textarea',
+    sendButtonSelector: 'button[data-testid="send-button"]',
+    isContentEditable: true
+  },
+  'chat.deepseek.com': {
+    inputSelector: 'textarea.ds-scroll-area',
+    sendButtonSelector: 'div._7436101[role="button"]',
+    isContentEditable: false
+  },
+  'claude.ai': {
+    inputSelector: '[data-testid="chat-input"]',
+    sendButtonSelector: 'button[aria-label="Send message"]',
+    isContentEditable: true
+  }
+};
+
+const currentHost = window.location.hostname;
+const siteConfig = Object.entries(CONFIG).find(([domain]) => currentHost.includes(domain))?.[1];
+
 if (typeof chrome !== 'undefined' && chrome.storage) {
   chrome.storage.local.get(['temporalAnchorEnabled'], (result) => {
     if (result.temporalAnchorEnabled !== undefined) {
@@ -11,7 +31,6 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
     }
   });
 
-  // 2. Listen for changes (real-time toggle support)
   chrome.storage.onChanged.addListener((changes, namespace) => {
     if (namespace === 'local' && changes.temporalAnchorEnabled) {
       isEnabled = changes.temporalAnchorEnabled.newValue;
@@ -20,92 +39,122 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
   });
 }
 
-function attachListener(chatInput) {
-  console.log('Temporal Anchor: Listener attached (Append Mode)');
+function handleKeydown(event) {
+  if (!isEnabled) return;
+  if (!siteConfig) return;
+  if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return;
 
-  const isEditable = chatInput.isContentEditable === true;
-  const isTextarea = chatInput.tagName === 'TEXTAREA';
+  // Check if this is from a chat input
+  const chatInput = event.target.closest(siteConfig.inputSelector) ||
+    (event.target.isContentEditable ? event.target : null);
 
-  if (!isTextarea && !isEditable) return;
+  if (!chatInput) return;
 
-  chatInput.addEventListener('keydown', (event) => {
-    // 0. CHECK STATE: If disabled, stop immediately.
-    if (!isEnabled) return;
+  // Get text BEFORE blocking (this is the race we're trying to win)
+  let currentText = '';
+  const paragraphs = chatInput.querySelectorAll('p');
+  if (paragraphs.length > 0) {
+    currentText = Array.from(paragraphs).map(p => p.textContent).join('\n').trim();
+  } else {
+    currentText = (chatInput.textContent || chatInput.innerText || chatInput.value || '').trim();
+  }
 
-    // Only trigger on Enter without Shift (Send command)
-    if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return;
+  console.log('Temporal Anchor: Enter at window level, text:', JSON.stringify(currentText.substring(0, 50)));
 
-    // Safety Check: Don't send if the message is actually empty
-    const currentText = chatInput.innerText || chatInput.value || '';
-    if (!currentText.trim()) return;
+  if (!currentText) {
+    console.log('Temporal Anchor: No text found, skipping');
+    return;
+  }
 
-    event.preventDefault();
-    event.stopPropagation();
+  // BLOCK everything - we're at window level, highest priority
+  event.preventDefault();
+  event.stopPropagation();
+  event.stopImmediatePropagation();
 
-    // AUTOMATIC SYSTEM TIMEZONE
-    const timestamp = new Date().toLocaleString(undefined, {
-      dateStyle: 'short',
-      timeStyle: 'medium',
-    });
+  console.log(`Temporal Anchor: Blocked Enter, adding timestamp...`);
 
-    const timestampText = `⌚ [Sent: ${timestamp}]`;
+  const timestamp = new Date().toLocaleString(undefined, {
+    dateStyle: 'short',
+    timeStyle: 'medium',
+  });
+  const timestampText = `⌚ [Sent: ${timestamp}]`;
 
-    console.log('Appending timestamp...');
+  try {
+    if (siteConfig.isContentEditable) {
+      chatInput.focus();
 
-    try {
-      if (isTextarea) {
-        // Standard Textarea
-        chatInput.value += `\n${timestampText}`;
-      } else {
-        // ContentEditable (Standard ChatGPT input)
-        const timeContainer = document.createElement('p');
-        timeContainer.style.marginTop = '6px';
-        timeContainer.style.fontSize = '0.85em';
-        timeContainer.style.color = '#6b7280'; // subtle grey
-        timeContainer.innerText = timestampText;
+      // Move cursor to end of content (preserve existing formatting)
+      const range = document.createRange();
+      const sel = window.getSelection();
+      range.selectNodeContents(chatInput);
+      range.collapse(false); // false = collapse to end
+      sel.removeAllRanges();
+      sel.addRange(range);
 
-        chatInput.appendChild(timeContainer);
-      }
+      // Append timestamp using execCommand (preserves existing content/formatting)
+      document.execCommand('insertText', false, '\n' + timestampText);
 
-      // Notify React/Editor that data changed.
+      // Notify framework
+      chatInput.dispatchEvent(new InputEvent('input', {
+        bubbles: true,
+        composed: true,
+        inputType: 'insertText',
+        data: timestampText
+      }));
+
+      console.log('Temporal Anchor: Timestamp appended');
+    } else {
+      chatInput.value += '\n' + timestampText;
       chatInput.dispatchEvent(new Event('input', { bubbles: true }));
-
-    } catch (err) {
-      console.error('Could not append timestamp:', err);
     }
 
-    // Trigger Send
-    requestAnimationFrame(() => {
-        const sendButton = document.querySelector('button[data-testid="send-button"]');
-        if (sendButton) {
-          sendButton.click();
-          console.log('Message sent with timestamp!');
-        } else {
-          console.warn('Send button not found.');
-        }
-    });
-  }, true);
+    // Click send
+    setTimeout(() => clickSendButton(), 100);
+
+  } catch (err) {
+    console.error('Temporal Anchor: Error:', err);
+  }
 }
 
-// Initialization logic
-function initTemporalAnchor() {
-  const bind = () => {
-    const chatInput = document.querySelector('#prompt-textarea');
-    if (chatInput && !chatInput.dataset.temporalAnchorBound) {
-      chatInput.dataset.temporalAnchorBound = 'true';
-      attachListener(chatInput);
-    }
-  };
+function clickSendButton() {
+  let sendButton = document.querySelector(siteConfig.sendButtonSelector);
+  if (!sendButton && currentHost.includes('claude.ai')) {
+    sendButton = document.querySelector('button[aria-label*="Send"]');
+  }
 
-  const observer = new MutationObserver(bind);
-  observer.observe(document.body, { childList: true, subtree: true });
-  bind();
+  if (sendButton && !sendButton.disabled) {
+    console.log('Temporal Anchor: Clicking send');
+    sendButton.click();
+  } else {
+    let attempts = 0;
+    const tryClick = () => {
+      sendButton = document.querySelector(siteConfig.sendButtonSelector) ||
+        document.querySelector('button[aria-label*="Send"]');
+      if (sendButton && !sendButton.disabled) {
+        console.log('Temporal Anchor: SUCCESS');
+        sendButton.click();
+      } else if (attempts < 20) {
+        attempts++;
+        setTimeout(tryClick, 100);
+      }
+    };
+    setTimeout(tryClick, 50);
+  }
+}
+
+function init() {
+  if (!siteConfig) return;
+  console.log(`Temporal Anchor: Initialized for ${currentHost} (window-level capture)`);
+
+  // Listen on WINDOW (highest level) in capture phase
+  // This should fire before any document/element listeners
+  window.addEventListener('keydown', handleKeydown, true);
 }
 
 if (typeof document !== 'undefined') {
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initTemporalAnchor);
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    initTemporalAnchor();
+    init();
   }
 }

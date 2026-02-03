@@ -14,8 +14,14 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://chatgpt.com/*"],
-      "js": ["content.js"]
+      "matches": [
+        "*://chatgpt.com/*",
+        "*://chat.deepseek.com/*",
+        "*://claude.ai/*"
+      ],
+      "js": [
+        "content.js"
+      ]
     }
   ],
   "icons": {
